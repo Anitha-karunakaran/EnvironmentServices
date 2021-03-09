@@ -1,1 +1,1 @@
-web: flask db upgrade; gunicorn  envsrv:'create_app()'
+web: gunicorn  app:app
