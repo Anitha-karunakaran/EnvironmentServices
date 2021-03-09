@@ -53,3 +53,15 @@ Environment Services is an application which lists the environment services avai
   * PUT /services - Adds a new service and its details
   * PATCH /services - Updates an existing service details
   * DELETE - Deletes a service
+
+##Setting up Local environment
+Point the DATABASE_URL environment variable to the local database
+In Linux:
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/envsvdb
+In Windows:
+set DATABASE_URL=postgres://postgres:postgres@localhost:5432/envsrvdb
+
+python manage.py db init
+python manage.py db migrate
+python manage.py db upgrade
+

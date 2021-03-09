@@ -1,2 +1,2 @@
-FLASK_APP=envsrv
+FLASK_APP=app
 FLASK_ENV=development
