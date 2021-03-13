@@ -12,33 +12,24 @@ Environment Services is an application which lists the environment services avai
 
 ### Database Models
 **REGION**
-- Region Id- Unique Id for a local region where the environment services are listed
-- Region Name - Name of the local region
+- Id: Unique Id for a local region where the environment services are listed
+- Name: Name of the local region
 - City
 - State
 - Country
-- email: Contact details(email) of the Services Manager of the region
-- phone: Contact details(email) of the Services Manager of the region
-- image: Image representing the region
-- website
+- RegionHead
 
 **SERVICE**
 - Region Id: Id of the region in which the service is available
 - Service Id: Unique Id for the service
-- Service Type : The type of service
-- Service Name
+- Service Type: The type of service
+- Service Name: Name of the Organisation
 - Address
-- City
-- State
-- Country
 - email
 - phone
 - image
 - website
 
-### Modules
-1. [`./frontend/`](./frontend/README.md)
-2. [`./backend/`](./backend/README.md)
 
 ### API End Points
 * Region ( /regions )
@@ -61,7 +52,7 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5432/envsvdb
 In Windows:
 set DATABASE_URL=postgres://postgres:postgres@localhost:5432/envsrvdb
 
-python manage.py db init
-python manage.py db migrate
-python manage.py db upgrade
+flask db init
+flask db migrate
+flask db upgrade
 
