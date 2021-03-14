@@ -5,11 +5,12 @@
 import os
 import unittest
 import json
+from settings import TEST_DATABASE_URL
 from flask_sqlalchemy import SQLAlchemy
 from app import create_app
 from models import setup_db, Region, Service
 
-TEST_DATABASE_URL=os.getenv("TEST_DATABASE_URL")
+# TEST_DATABASE_URL=os.getenv("TEST_DATABASE_URL")
 new_region_id = -1
 new_service_id = -1
 
@@ -41,30 +42,24 @@ class EnvServicesTestCase(unittest.TestCase):
 
     def test_create_region(self):
         test_payload = {
-        "name": "Vadapalani",
+        "name": "Thookukudi",
         "city": "Chennai",
         "state": "Tamil Nadu",
         "country": "India",
         "regionhead": "Amutha"
         }
         res = self.client().post('/regions', json=test_payload)
-
-        print('In create region: res: ' + str(res))
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['created'])
-
-        print('Request: POST /regions')
-        print('Request Payload' + str(test_payload))
-
 
     '''
     Test for GET request for all the regions
     '''
     def test_get_regions(self):
         res = self.client().get('/regions')
-        #print('In get regions: res: ' + str(res))
+        print('In get regions: res: ' + str(res))
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
@@ -79,8 +74,33 @@ class EnvServicesTestCase(unittest.TestCase):
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertTrue(data['regions'])
+        self.assertTrue(data['region'])
 
+    '''
+    Test for update region
+    '''
+    def test_update_region(self):
+        test_payload = {
+            "name": "RR Nagar",
+            "regionhead": "Priya"
+            }
+        res = self.client().patch('/regions/3', json=test_payload)
+        #print('In get regions: res: ' + str(res))
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['updated'])
+
+    '''
+    Test for delete region
+    '''
+    def test_delete_region(self):
+        res = self.client().delete('/regions/3')
+        #print('In get regions: res: ' + str(res))
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['deleted'])
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

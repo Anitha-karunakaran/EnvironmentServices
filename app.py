@@ -78,12 +78,15 @@ def create_app(test_config=None):
     No request Payload
     Sample Success Response is below
     {
-    "city": "Chennai",
-    "country": "India",
-    "id": 1,
-    "name": "West Mambalam",
-    "regionhead": "Anitha",
-    "state": "Tamil Nadu"
+    "region": {
+        "city": "Chennai",
+        "country": "India",
+        "id": 1,
+        "name": "West Mambalam",
+        "regionhead": "Anitha",
+        "state": "Tamil Nadu"
+    },
+    "success": true
     }    '''
 
     @app.route('/regions/<region_id>', methods=['GET'])
@@ -92,7 +95,10 @@ def create_app(test_config=None):
             region = Region.query.filter(Region.id == region_id).one_or_none()
             if region is None:
                 abort(404)
-            return jsonify(Region.format(region)),200
+            return jsonify({
+                "region": Region.format(region),
+                "success": True
+            }),200
         except:
             print(sys.exc_info())
             abort(422)
@@ -154,7 +160,7 @@ def create_app(test_config=None):
     
     Sample Successful JSON Response
     {
-    "created": 2,
+    "updated": 2,
     "success": true
     }
     '''
@@ -165,7 +171,6 @@ def create_app(test_config=None):
         print(str(body))
         try:
             name = body.get('name', None)
-            print('---------'+str(body))
             city = body.get('city', None)
             state = body.get('state', None)
             country = body.get('country', None)
@@ -224,6 +229,249 @@ def create_app(test_config=None):
         except:
             abort(422)
 
+
+# ========================================================
+    '''
+    ROUTE FOR POST /services
+    Sample Request Payload in Expected Format:
+    {
+    'name': 'SS Resource Management Services',
+    'type': 'Resource Management Service',
+    'address': '3, Brinda Street, West Mambalam, Tamil Nadu',
+    'region_id': 1,
+    'email': 'info@ssrms.com',
+    'phone': '+91-1112223344',
+    'website': 'www.ssrms.com' 
+    }
+
+    Sample Successful JSON Response
+    {
+    "created": 1,
+    "success": true
+    }
+    '''
+
+    @app.route('/services', methods=['POST'])
+    def create_service():
+        body = request.get_json()
+        print('1111' + str(body))
+        try:
+            name = body.get('name', None)
+            type = body.get('type', None)
+            address = body.get('address', None)
+            region_id = body.get('region_id', None)
+            email = body.get('email', None)
+            phone = body.get('phone', None)
+            website = body.get('website', None)
+            image = body.get('image', None)
+
+            if (name is None) or (type is None) or (address is None) or (region_id is None):
+                print('Something is none')
+                abort(422)
+
+            new_service = Service(name=name, type=type, address=address,
+                                  region_id=region_id, email=email,
+                                  phone=phone, website=website, image=image)
+            new_service.insert()
+            return jsonify({
+                'success': True,
+                'created': new_service.id
+            }), 200
+        except:
+            print(sys.exc_info())
+            abort(422)
+
+    # -----------------------------------------------------------------------------------------
+    # ROUTE FOR GET all regions
+    # GET /regions
+    # -----------------------------------------------------------------------------------------
+    '''
+    ROUTE FOR GET /services
+    No request Payload
+    Sample Success Response is below:
+    {
+    "services": [
+        {
+            "address": "3 Brinda StreetWest MambalamTamil Nadu",
+            "email": "info@ssrms.com",
+            "id": 1,
+            "image": null,
+            "name": "SS Resource Management Services",
+            "phone": "911112223344",
+            "region_id": 1,
+            "type": "Resource Management Service",
+            "website": "www.ssrms.com"
+        },
+        {
+            "address": "3 Van Street, West Mambalam, Tamil Nadu",
+            "email": "info@mmrms.com",
+            "id": 3,
+            "image": null,
+            "name": "MM Resource Management Services",
+            "phone": "911112223355",
+            "region_id": 2,
+            "type": "Resource Management Service",
+            "website": "www.mmrms.com"
+        }
+    ],
+    "success": true
+}
+    '''
+
+    @app.route('/services', methods=['GET'])
+    def get_services():
+        all_services = Service.query.order_by(Service.id).all()
+        total_no_services = len(all_services)
+        if (total_no_services == 0):
+            abort(404)
+
+        services_array = []
+        for service in all_services:
+            services_array.append({
+                "id": service.id,
+                "name": service.name,
+                "type": service.type,
+                "address": service.address,
+                "region_id": service.region_id,
+                "email": service.email,
+                "phone": service.phone,
+                "website": service.website,
+                "image": service.image,
+            })
+        return jsonify({
+            'services': services_array,
+            'success':True
+        })
+
+    # -----------------------------------------------------------------------------------------
+    # ROUTE to GET a specific region
+    # GET /services/<service_id>
+    # -----------------------------------------------------------------------------------------
+    '''
+    ROUTE FOR GET /services/1
+    No request Payload
+    Sample Success Response is below
+    {
+    "service": {
+        "address": "3 Brinda StreetWest MambalamTamil Nadu",
+        "email": "info@ssrms.com",
+        "id": 1,
+        "image": null,
+        "name": "SS Resource Management Services",
+        "phone": "911112223344",
+        "region_id": 1,
+        "type": "Resource Management Service",
+        "website": "www.ssrms.com"
+    },
+    "success": true
+}    '''
+
+    @app.route('/services/<service_id>', methods=['GET'])
+    def get_service_by_id(service_id):
+        try:
+            service = Service.query.filter(Service.id == service_id).one_or_none()
+            if service is None:
+                abort(404)
+            return jsonify({
+                "service": Service.format(service),
+                "success": True
+            }),200
+        except:
+            print(sys.exc_info())
+            abort(422)
+
+    # -----------------------------------------------------------------------------------------
+    # ROUTE to update a service
+    # PATCH /services/<service_id>
+    # -----------------------------------------------------------------------------------------
+
+    '''
+    ROUTE TO UPDATE Services
+    PATCH /services/<service_id>
+
+    Sample Successful JSON Response
+    {
+    "updated": 2,
+    "success": true
+    }
+    '''
+
+    @app.route('/services/<service_id>', methods=['PATCH'])
+    def update_service(service_id):
+        body = request.get_json()
+        print(str(body))
+        try:
+            name = body.get('name', None)
+            type = body.get('type', None)
+            address = body.get('address', None)
+            region_id = body.get('region_id', None)
+            email = body.get('email', None)
+            phone = body.get('phone', None)
+            website = body.get('website', None)
+            image = body.get('image', None)
+
+            if (name is None) and (type is None) and (address is None) \
+                    and (region_id is None) and (email is None) and (phone is None)\
+                    and (website is None) and (image is None):
+                abort(422)
+
+            service = Service.query.get(service_id)
+            if (service is None):
+                abort(402)
+
+            if name is not None:
+                service.name = name
+            if type is not None:
+                service.type = type
+            if address is not None:
+                service.address = address
+            if region_id is not None:
+                service.region_id = region_id
+            if email is not None:
+                service.email = email
+            if phone is not None:
+                service.phone = phone
+            if image is not None:
+                service.image = image
+            if website is not None:
+                service.website = website
+
+            Service.update(service)
+            return jsonify({
+                'success': True,
+                'updated': service.id
+            }), 200
+        except:
+            print(sys.exc_info())
+            abort(500)
+
+    '''
+    ROUTE TO DELETE Service BY ID
+    DELETE /services/<service_id>
+
+    Sample Successful JSON Response
+    {
+    "deleted": 2,
+    "success": true
+    }
+    '''
+
+    @app.route('/services/<service_id>', methods=['DELETE'])
+    def delete_service(service_id):
+
+        service = Service.query.get(service_id)
+
+        if service is None:
+            abort(404)
+        try:
+            Service.delete(service)
+            return jsonify({
+                'success': True,
+                'deleted': service.id
+            }), 200
+        except:
+            abort(422)
+
     '''
     ROUTE FOR APPLICATION ROOT
     '''
@@ -270,5 +518,5 @@ def create_app(test_config=None):
 
 app = create_app()
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=8080, debug=True)
