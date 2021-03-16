@@ -46,6 +46,7 @@ Environment Services is an application which lists the environment services avai
   * DELETE - Deletes a service
 
 ##Setting up Local environment
+
 Point the DATABASE_URL environment variable to the local database
 In Linux:
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/envsvdb
@@ -55,4 +56,23 @@ set DATABASE_URL=postgres://postgres:postgres@localhost:5432/envsrvdb
 flask db init
 flask db migrate
 flask db upgrade
+
+### Setting up and Running Unit Tests
+For initial setup and For any changes in database schema:
+#### Drop the test database
+`dropdb -U postgres test_envsrvdb`
+
+#### Create the test database
+Assuming the Postgres User and Password is postgres, create the test database:
+`createdb -U postgres test_envsrvdb`
+
+#### Restoring the test database dump
+`psql -U postgres test_envsrvdb < envrsvdb_backup.sql`
+
+#### TEST_DATABASE_URL Environment Variable
+The test database URL is present in .env file.
+`TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_envsrvdb`
+
+#### RUN THE TEST PYTHON CLASS
+`py test_env_services.py`
 

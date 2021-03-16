@@ -227,6 +227,7 @@ def create_app(test_config=None):
                 'deleted': region.id
             }), 200
         except:
+            print(sys.exc_info())
             abort(422)
 
 
@@ -462,6 +463,7 @@ def create_app(test_config=None):
         service = Service.query.get(service_id)
 
         if service is None:
+            print(sys.exc_info())
             abort(404)
         try:
             Service.delete(service)
@@ -470,6 +472,7 @@ def create_app(test_config=None):
                 'deleted': service.id
             }), 200
         except:
+            print(sys.exc_info())
             abort(422)
 
     '''

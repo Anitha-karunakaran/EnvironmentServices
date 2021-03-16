@@ -74,3 +74,5 @@ Werkzeug==1.0.1
 whitenoise==5.2.0
 wrapt==1.11.1
 yarg==0.1.9
+functools
+from urllib.request import urlopen

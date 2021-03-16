@@ -32,7 +32,7 @@ class Region(db.Model):
   state = Column(String, nullable=False)
   country = Column(String, nullable=False)
   regionhead = Column(String, nullable=False)
-  services = db.relationship('Service', backref='region', lazy=True)
+  services = db.relationship('Service', backref='region', lazy=True, cascade="delete, merge, save-update")
 
   def __init__(self, name, city, state, country, regionhead):
     self.name = name
