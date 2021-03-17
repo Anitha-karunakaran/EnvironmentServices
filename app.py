@@ -3,12 +3,12 @@ from flask import Flask, request, abort, jsonify
 from models import setup_db, Region, Service
 from flask_cors import CORS
 import sys
+from auth import AuthError, requires_auth
 
 def create_app(test_config=None):
 
     app = Flask(__name__)
     setup_db(app)
-    #CORS(app)
     CORS(app, resources={r"/*": {"origins": "*"}})
 
     # CORS Headers
@@ -127,7 +127,8 @@ def create_app(test_config=None):
     '''
 
     @app.route('/regions', methods=['POST'])
-    def create_region():
+    @requires_auth('post:regions')
+    def create_region(jwt):
         try:
             body = request.get_json()
             name = body.get('name', None)
@@ -154,6 +155,7 @@ def create_app(test_config=None):
     # PATCH /regions/<region_id>
     # -----------------------------------------------------------------------------------------
 
+
     '''
     ROUTE TO UPDATE Regions
     PATCH /regions/<region_id>
@@ -166,7 +168,8 @@ def create_app(test_config=None):
     '''
 
     @app.route('/regions/<region_id>', methods=['PATCH'])
-    def update_region(region_id):
+    @requires_auth('patch:regions')
+    def update_region(jwt,region_id):
         body = request.get_json()
         print(str(body))
         try:
@@ -213,8 +216,10 @@ def create_app(test_config=None):
     "success": true
     }
     '''
+
     @app.route('/regions/<region_id>', methods=['DELETE'])
-    def delete_region(region_id):
+    @requires_auth('delete:regions')
+    def delete_region(jwt, region_id):
 
         region = Region.query.get(region_id)
 
@@ -253,11 +258,10 @@ def create_app(test_config=None):
     '''
 
     @app.route('/services', methods=['POST'])
-    def create_service():
+    @requires_auth('post:services')
+    def create_service(jwt):
         body = request.get_json()
-        print('1111' + str(body))
         try:
-            name = body.get('name', None)
             type = body.get('type', None)
             address = body.get('address', None)
             region_id = body.get('region_id', None)
@@ -398,7 +402,8 @@ def create_app(test_config=None):
     '''
 
     @app.route('/services/<service_id>', methods=['PATCH'])
-    def update_service(service_id):
+    @requires_auth('patch:services')
+    def update_service(jwt, service_id):
         body = request.get_json()
         print(str(body))
         try:
@@ -458,7 +463,8 @@ def create_app(test_config=None):
     '''
 
     @app.route('/services/<service_id>', methods=['DELETE'])
-    def delete_service(service_id):
+    @requires_auth('delete:services')
+    def delete_service(jwt, service_id):
 
         service = Service.query.get(service_id)
 

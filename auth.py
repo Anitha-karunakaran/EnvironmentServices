@@ -7,7 +7,7 @@ from urllib.request import urlopen
 
 AUTH0_DOMAIN = 'fsndanikaruna.us.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = 'drinks'
+API_AUDIENCE = 'envsrv'
 
 ## AuthError Exception
 '''
@@ -74,8 +74,8 @@ check_permissions(permission, payload) method
     return true otherwise
 '''
 def check_permissions(permission, payload):
-    #print('logging:::: permission:::::'+str(permission))
-    #print('logging:::: payload(check_permission):::::' + str(payload))
+    print('logging:::: permission:::::'+str(permission))
+    print('logging:::: payload(check_permission):::::' + str(payload))
 
     if 'permissions' not in payload:
         print('******check1')
@@ -133,7 +133,7 @@ def verify_decode_jwt(token):
                 audience=API_AUDIENCE,
                 issuer='https://' + AUTH0_DOMAIN + '/'
             )
-            #print('logging:::: payload in auth.py:::::'+str(payload))
+            print('logging:::: payload in auth.py:::::'+str(payload))
             return payload
 
         except jwt.ExpiredSignatureError:
@@ -170,6 +170,7 @@ def requires_auth(permission=''):
         def wrapper(*args, **kwargs):
 
             try:
+                print('--------------------111')
                 token = get_token_auth_header()
                 payload = verify_decode_jwt(token)
                 check_permissions(permission, payload)
