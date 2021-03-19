@@ -262,6 +262,7 @@ def create_app(test_config=None):
     def create_service(jwt):
         body = request.get_json()
         try:
+            name = body.get('name', None)
             type = body.get('type', None)
             address = body.get('address', None)
             region_id = body.get('region_id', None)

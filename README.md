@@ -46,6 +46,7 @@ Environment Services is an application which lists the environment services avai
   * DELETE - Deletes a service
 
 ##Setting up Local environment
+Run the setup.bat on Windows or setup.sh on Linux
 
 Point the DATABASE_URL environment variable to the local database
 In Linux:
@@ -56,6 +57,7 @@ set DATABASE_URL=postgres://postgres:postgres@localhost:5432/envsrvdb
 flask db init
 flask db migrate
 flask db upgrade
+
 
 ### Setting up and Running Unit Tests
 For initial setup and For any changes in database schema:
