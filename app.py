@@ -148,7 +148,7 @@ def create_app(test_config=None):
             }), 200
         except:
             print(sys.exc_info())
-            abort(500)
+            abort(422)
 
     # -----------------------------------------------------------------------------------------
     # ROUTE to update a region
@@ -523,6 +523,14 @@ def create_app(test_config=None):
             'error': 500,
             'message': 'internal server error'
         }), 500
+
+    @app.errorhandler(AuthError)
+    def handle_auth_error(ex):
+        return jsonify({
+            "success": False,
+            "error": ex.status_code,
+            'message': ex.error
+        }), 401
 
     return app
 
