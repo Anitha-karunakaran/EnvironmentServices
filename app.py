@@ -54,18 +54,8 @@ def create_app(test_config=None):
         if (total_no_regions == 0):
             abort(404)
 
-        region_array = []
-        for region in all_regions:
-            region_array.append({
-                "id": region.id,
-                "name": region.name,
-                "city": region.city,
-                "state": region.state,
-                "country": region.country,
-                "regionhead": region.regionhead
-            })
         return jsonify({
-            'regions': region_array,
+            'regions': [region.format() for region in all_regions],
             'success':True
         })
 
@@ -178,6 +168,7 @@ def create_app(test_config=None):
             state = body.get('state', None)
             country = body.get('country', None)
             regionhead = body.get('regionhead', None)
+
 
             if (name is None) and (city is None) and (state is None) and (regionhead is None):
                 abort(422)
@@ -331,21 +322,8 @@ def create_app(test_config=None):
         if (total_no_services == 0):
             abort(404)
 
-        services_array = []
-        for service in all_services:
-            services_array.append({
-                "id": service.id,
-                "name": service.name,
-                "type": service.type,
-                "address": service.address,
-                "region_id": service.region_id,
-                "email": service.email,
-                "phone": service.phone,
-                "website": service.website,
-                "image": service.image,
-            })
         return jsonify({
-            'services': services_array,
+            'services': [service.format() for service in all_services],
             'success':True
         })
 

@@ -1,6 +1,6 @@
 # STEPS TO EXECUTE THE TEST
 # 1. The test database should have been created - eg. test_envsrvdb
-# 2. The following environment variable should be set :
+# 2. The following environment variable should be set (setup_test_jwt.bat can be used)
 #    a. TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_envsrvdb
 #    b. CHIEF_OFFICER_JWT should contain valid JWT of CHIEF_OFFICER
 #    c. SERVICES_MANAGER_JWT should contain valid JWT of SERVICES_MANAGER_JWT
@@ -16,6 +16,7 @@ from settings import TEST_DATABASE_URL, CHIEF_OFFICER_JWT, SERVICES_MANAGER_JWT
 from flask_sqlalchemy import SQLAlchemy
 from app import create_app
 from models import setup_db, Region, Service
+from test_util import generate_region_payload, generate_service_payload
 
 new_region_id = -1
 new_service_id = -1
@@ -45,22 +46,31 @@ class EnvServicesTestCase(unittest.TestCase):
         pass
 
     '''
-    Test case for creating, reading, updating and deleting region
+    Region
     '''
+    '''
+    Create Region - Only by Chief Officer
+    '''
+    def test_public_create_region(self):
+        '''
+        Public - Without authorization headers - Cannot create regions
+        '''
+        test_payload = generate_region_payload()
+        res = self.client().post('/regions', json=test_payload)
+        self.assertEqual(res.status_code, 401)
 
-    def test_create_read_update_delete_region(self):
-        #generate random name for region
-        region_name = 'test_'.join(random.choices(string.ascii_uppercase +
-                             string.digits, k = 7))
+        '''
+        Services Manager - Cannot create regions
+        '''
+        test_payload = generate_region_payload()
+        self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
+        res = self.client().post('/regions', json=test_payload, headers=self.headers)
+        self.assertEqual(res.status_code, 401)
 
-        # CREATE REGION
-        test_payload = {
-        "name": region_name,
-        "city": "Chennai",
-        "state": "Tamil Nadu",
-        "country": "India",
-        "regionhead": "Anitha"
-        }
+        '''
+        CHIEF OFFICER - Can create regions
+        '''
+        test_payload = generate_region_payload()
         self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
         res = self.client().post('/regions', json=test_payload, headers=self.headers)
         data = json.loads(res.data)
@@ -68,124 +78,207 @@ class EnvServicesTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(data['created'])
 
-        created_region_id = data['created']
-        print('created a region with id:'+ str(created_region_id))
-
-        # READ A REGION
+    '''
+    Read a Region Detail - Every one can
+    '''
+    def test_read_a_region(self):
+        #Create Region by Chief Officer
+        test_payload = generate_region_payload()
         self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
-        res = self.client().get('/regions/'+ str(created_region_id), headers=self.headers)
-        # print('In get regions: res: ' + str(res))
+        res = self.client().post('/regions', json=test_payload, headers=self.headers)
+        data = json.loads(res.data)
+        created_region_id = data['created']
+
+        #Read a region detail by Public
+        res = self.client().get('/regions/' + str(created_region_id))
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['region'])
-        print('read a region with id:' + str(created_region_id))
 
-        # UPDATE A REGION BY CHIEF OFFICER
-        test_payload = {
-            "regionhead": "AnithaKarunakaran"
-        }
-        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
-        res = self.client().patch('/regions/'+ str(created_region_id), json=test_payload, headers=self.headers)
-        # print('In get regions: res: ' + str(res))
-        data = json.loads(res.data)
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertTrue(data['updated'])
-        print('updated a region with id:' + str(created_region_id))
-
-        # UPDATE A REGION BY SERVICES MANAGER
-        test_payload = {
-            "regionhead": "AnithaKarunakaran"
-        }
+        #Read a region detail by Services Manager
         self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
-        res = self.client().patch('/regions/' + str(created_region_id), json=test_payload, headers=self.headers)
-        # print('In get regions: res: ' + str(res))
-        data = json.loads(res.data)
-        self.assertEqual(res.status_code, 401)
-        print('Region Update Not possible by Service Manager')
-
-        # DELETE A REGION
-        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
-        res = self.client().delete('/regions/'+ str(created_region_id), headers=self.headers)
-        # print('In get regions: res: ' + str(res))
-        data = json.loads(res.data)
+        res = self.client().get('/regions/' + str(created_region_id), headers=self.headers)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertTrue(data['deleted'])
-        print('deleted a region with id:' + str(created_region_id))
+        self.assertTrue(data['region'])
+
+        #Read a region detail by Chief Officer
+        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
+        res = self.client().get('/regions/' + str(created_region_id), headers=self.headers)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['region'])
 
     '''
-    Test for GET request for all the regions
+    Read All Regions - Everyone can
     '''
     def test_get_regions(self):
         res = self.client().get('/regions')
-        print('In get regions: res: ' + str(res))
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['regions'])
 
     '''
-    Test case for creating, reading, updating and deleting region
+    Update a region - Only a Chief Officer can
     '''
+    def test_update_a_region(self):
+        #Create Region by Chief Officer
+        test_payload = generate_region_payload()
+        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
+        res = self.client().post('/regions', json=test_payload, headers=self.headers)
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        created_region_id = data['created']
 
-    def test_create_read_update_delete_service(self):
-        print('******************** SERVICE TESTS START ********************')
-        # generate random name for region
-        rnd_region_name = 'rg_'.join(random.choices(string.ascii_uppercase +
-                                                  string.digits, k=7))
-
-        # CREATE REGION
-        test_region_payload = {
-            "name": rnd_region_name,
-            "city": "Chennai",
-            "state": "Tamil Nadu",
-            "country": "India",
-            "regionhead": "Anitha"
+        test_payload = {
+            "regionhead": "AnithaKarunakaran"
         }
+
+        # UPDATE A REGION BY PUBLIC - NOT ALLOWED
+        res = self.client().patch('/regions/' + str(created_region_id), json=test_payload)
+        self.assertEqual(res.status_code, 401)
+
+        # UPDATE A REGION BY SERVICES MANAGER - NOT ALLOWED
+        self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
+        res = self.client().patch('/regions/' + str(created_region_id), json=test_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 401)
+
+        # UPDATE A REGION BY CHIEF OFFICER
+        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
+        res = self.client().patch('/regions/' + str(created_region_id), json=test_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['updated'])
+
+    '''
+    Delete a region - Only a Chief Officer can
+    '''
+    def test_delete_a_region(self):
+        #Create Region by Chief Officer
+        test_payload = generate_region_payload()
+        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
+        res = self.client().post('/regions', json=test_payload, headers=self.headers)
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        created_region_id = data['created']
+
+        # Public cannot delete a region
+        res = self.client().delete('/regions/'+ str(created_region_id))
+        self.assertEqual(res.status_code, 401)
+
+        # Services Manager cannot delete a region
+        self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
+        res = self.client().delete('/regions/'+ str(created_region_id), headers=self.headers)
+        self.assertEqual(res.status_code, 401)
+
+        # Chief Officer can delete a region
+        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
+        res = self.client().delete('/regions/'+ str(created_region_id), headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['deleted'])
+
+    '''
+    Services
+    '''
+    '''
+    Create a new Service - Only Service Manager and Chief Officer can
+    '''
+    def test_create_service(self):
+        #Create a new region by chief officer
+        test_region_payload = generate_region_payload()
         self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
         res = self.client().post('/regions', json=test_region_payload, headers=self.headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['created'])
-
         created_region_id = data['created']
-        print('created a region with id:' + str(created_region_id))
 
-        #generate random name for region
-        service_name = ''.join(random.choices(string.ascii_uppercase +
-                             string.digits, k = 7))
+        #Create a new service by Services Manager
+        test_payload = generate_service_payload(created_region_id)
+        self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
+        res = self.client().post('/services', json=test_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        created_service_id = data['created']
 
-        # CREATE SERVICE WITH RANDOM SERVICE NAME FOR THE NEW REGION CREATED ABOVE
-        test_payload = {
-            "name": service_name,
-            "type": "Test Service Type ",
-            "address": "Test Address",
-            "region_id": created_region_id,
-            "email": "info@ssrms.com",
-            "phone": "+91-1112223344",
-            "website": "www.ssrms.com"
-        }
-        ######################
+        #Create a new service by Chief Officer
+        test_payload = generate_service_payload(created_region_id)
         self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
         res = self.client().post('/services', json=test_payload, headers=self.headers)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['created'])
-
         created_service_id = data['created']
-        print('created a service with id:'+ str(created_service_id) +" name: "+ service_name)
 
-        # READ A SERVICE
+    '''
+    Read a Service or all services - Everyone can
+    '''
+    def test_read_a_service(self):
+
+        # Create a new region by chief officer
+        test_region_payload = generate_region_payload()
+        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
+        res = self.client().post('/regions', json=test_region_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        created_region_id = data['created']
+
+        # Create a new service by Services Manager
+        test_payload = generate_service_payload(created_region_id)
+        self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
+        res = self.client().post('/services', json=test_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        created_service_id = data['created']
+
+        # Read a service
         res = self.client().get('/services/'+ str(created_service_id))
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['service'])
-        print('read a service with id:' + str(created_service_id))
+
+        # Read all services
+        res = self.client().get('/services')
+        self.assertEqual(res.status_code, 200)
+
+    '''
+    Update a Service - Only Service Manager and Chief Officer Can
+    '''
+    def test_update_a_service(self):
+        # Create a new region by chief officer
+        test_region_payload = generate_region_payload()
+        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
+        res = self.client().post('/regions', json=test_region_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        created_region_id = data['created']
+
+        # Create a new service by Services Manager
+        test_payload = generate_service_payload(created_region_id)
+        self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
+        res = self.client().post('/services', json=test_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        created_service_id = data['created']
 
         # UPDATE A SERVICE BY CHIEF OFFICER
         test_update_service_payload = {
@@ -198,7 +291,6 @@ class EnvServicesTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['updated'])
-        print('updated a service with id:' + str(created_service_id))
 
         # UPDATE A SERVICE BY SERVICES MANAGER
         self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
@@ -208,7 +300,35 @@ class EnvServicesTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['updated'])
-        print('updated a service with id:' + str(created_service_id))
+
+        # UPDATE A SERVICE BY PUBLIC - Not allowed
+        res = self.client().patch('/services/' + str(created_service_id), json=test_update_service_payload)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 401)
+
+    '''
+     Delete a Service - Only Service Manager and Chief Officer Can
+     '''
+    def test_delete_a_service(self):
+        # Create a new region by chief officer
+        test_region_payload = generate_region_payload()
+        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
+        res = self.client().post('/regions', json=test_region_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        created_region_id = data['created']
+
+        # Create a new service by Services Manager
+        test_payload = generate_service_payload(created_region_id)
+        self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
+        res = self.client().post('/services', json=test_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        created_service_id = data['created']
 
         # DELETE A SERVICE
         self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
@@ -217,18 +337,25 @@ class EnvServicesTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['deleted'])
-        print('deleted a service with id:' + str(created_service_id))
 
-        # DELETE A PARENT REGION
-        # res = self.client().delete('/regions/'+ str(created_region_id))
-        # # print('In get regions: res: ' + str(res))
-        # data = json.loads(res.data)
-        # self.assertEqual(res.status_code, 200)
-        # self.assertEqual(data['success'], True)
-        # self.assertTrue(data['deleted'])
-        # print('deleted a region with id:' + str(created_region_id))
+        # Create a new service again by Services Manager
+        test_payload = generate_service_payload(created_region_id)
+        self.headers.update({'Authorization': 'Bearer ' + SERVICES_MANAGER_JWT})
+        res = self.client().post('/services', json=test_payload, headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        created_service_id = data['created']
+
+        # DELETE A PARENT REGION - Cascade delete region and its services - Only by Chief Officer
+        self.headers.update({'Authorization': 'Bearer ' + CHIEF_OFFICER_JWT})
+        res = self.client().delete('/regions/'+ str(created_region_id), headers=self.headers)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['deleted'])
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()
-    

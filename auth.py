@@ -76,13 +76,11 @@ check_permissions(permission, payload) method
 def check_permissions(permission, payload):
 
     if 'permissions' not in payload:
-        print('******check1')
         raise AuthError({
             'code': 'permissions_not_in_token',
             'description': 'Permissions are not available in Token'
         }, 403)
     if permission not in payload['permissions']:
-        print('******check2')
         raise AuthError({
             'code': 'required_permissions_not_in_token',
             'description': 'Required Permissions are not available in Token'
