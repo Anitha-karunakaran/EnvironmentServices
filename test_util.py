@@ -1,6 +1,7 @@
 import string
 import random
 
+
 def generate_region_payload():
     # generate random name for region
     region_name = ''.join(random.choices(string.ascii_uppercase +
@@ -13,6 +14,7 @@ def generate_region_payload():
         "regionhead": "Anitha"
     }
     return test_payload
+
 
 def generate_service_payload(created_region_id):
     # generate random name for region
@@ -27,4 +29,4 @@ def generate_service_payload(created_region_id):
         "phone": "+91-1112223344",
         "website": "www.ssrms.com"
     }
-    return  test_payload
+    return test_payload

@@ -5,6 +5,7 @@ from flask_cors import CORS
 import sys
 from auth import AuthError, requires_auth
 
+
 def create_app(test_config=None):
 
     app = Flask(__name__)
@@ -14,8 +15,12 @@ def create_app(test_config=None):
     # CORS Headers
     @app.after_request
     def after_request(response):
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS')
+        response.headers.add(
+            'Access-Control-Allow-Headers',
+            'Content-Type,Authorization,true')
+        response.headers.add(
+            'Access-Control-Allow-Methods',
+            'GET,PUT,POST,PATCH,DELETE,OPTIONS')
         return response
 
     # -----------------------------------------------------------------------------------------
@@ -56,7 +61,7 @@ def create_app(test_config=None):
 
         return jsonify({
             'regions': [region.format() for region in all_regions],
-            'success':True
+            'success': True
         })
 
     # -----------------------------------------------------------------------------------------
@@ -81,17 +86,13 @@ def create_app(test_config=None):
 
     @app.route('/regions/<region_id>', methods=['GET'])
     def get_region_by_id(region_id):
-        try:
-            region = Region.query.filter(Region.id == region_id).one_or_none()
-            if region is None:
-                abort(404)
-            return jsonify({
-                "region": Region.format(region),
-                "success": True
-            }),200
-        except:
-            print(sys.exc_info())
-            abort(422)
+        region = Region.query.get(region_id)
+        if region is None:
+            abort(404)
+        return jsonify({
+            "region": Region.format(region),
+            "success": True
+        }), 200
 
     # -----------------------------------------------------------------------------------------
     # ROUTE to create a new region
@@ -108,7 +109,7 @@ def create_app(test_config=None):
     'country': 'India',
     'regionhead': 'Anitha'
     }
-    
+
     Sample Successful JSON Response
     {
     "created": 2,
@@ -127,16 +128,22 @@ def create_app(test_config=None):
             country = body.get('country', None)
             regionhead = body.get('regionhead', None)
 
-            if (name is None) or (city is None) or (state is None) or (regionhead is None):
+            if (name is None) or (city is None) or (
+                    state is None) or (regionhead is None):
                 abort(422)
 
-            new_region = Region(name=name, city=city, state=state, regionhead=regionhead, country=country)
+            new_region = Region(
+                name=name,
+                city=city,
+                state=state,
+                regionhead=regionhead,
+                country=country)
             new_region.insert()
             return jsonify({
                 'success': True,
                 'created': new_region.id
             }), 200
-        except:
+        except BaseException:
             print(sys.exc_info())
             abort(422)
 
@@ -145,11 +152,10 @@ def create_app(test_config=None):
     # PATCH /regions/<region_id>
     # -----------------------------------------------------------------------------------------
 
-
     '''
     ROUTE TO UPDATE Regions
     PATCH /regions/<region_id>
-    
+
     Sample Successful JSON Response
     {
     "updated": 2,
@@ -159,9 +165,8 @@ def create_app(test_config=None):
 
     @app.route('/regions/<region_id>', methods=['PATCH'])
     @requires_auth('patch:regions')
-    def update_region(jwt,region_id):
+    def update_region(jwt, region_id):
         body = request.get_json()
-        print(str(body))
         try:
             name = body.get('name', None)
             city = body.get('city', None)
@@ -169,8 +174,8 @@ def create_app(test_config=None):
             country = body.get('country', None)
             regionhead = body.get('regionhead', None)
 
-
-            if (name is None) and (city is None) and (state is None) and (regionhead is None):
+            if (name is None) and (city is None) and (
+                    state is None) and (regionhead is None):
                 abort(422)
 
             region = Region.query.get(region_id)
@@ -193,7 +198,7 @@ def create_app(test_config=None):
                 'success': True,
                 'updated': region.id
             }), 200
-        except:
+        except BaseException:
             print(sys.exc_info())
             abort(500)
 
@@ -222,7 +227,7 @@ def create_app(test_config=None):
                 'success': True,
                 'deleted': region.id
             }), 200
-        except:
+        except BaseException:
             print(sys.exc_info())
             abort(422)
 
@@ -238,7 +243,7 @@ def create_app(test_config=None):
     'region_id': 1,
     'email': 'info@ssrms.com',
     'phone': '+91-1112223344',
-    'website': 'www.ssrms.com' 
+    'website': 'www.ssrms.com'
     }
 
     Sample Successful JSON Response
@@ -262,8 +267,8 @@ def create_app(test_config=None):
             website = body.get('website', None)
             image = body.get('image', None)
 
-            if (name is None) or (type is None) or (address is None) or (region_id is None):
-                print('Something is none')
+            if (name is None) or (type is None) or (
+                    address is None) or (region_id is None):
                 abort(422)
 
             new_service = Service(name=name, type=type, address=address,
@@ -274,7 +279,7 @@ def create_app(test_config=None):
                 'success': True,
                 'created': new_service.id
             }), 200
-        except:
+        except BaseException:
             print(sys.exc_info())
             abort(422)
 
@@ -324,7 +329,7 @@ def create_app(test_config=None):
 
         return jsonify({
             'services': [service.format() for service in all_services],
-            'success':True
+            'success': True
         })
 
     # -----------------------------------------------------------------------------------------
@@ -352,17 +357,13 @@ def create_app(test_config=None):
 
     @app.route('/services/<service_id>', methods=['GET'])
     def get_service_by_id(service_id):
-        try:
-            service = Service.query.filter(Service.id == service_id).one_or_none()
-            if service is None:
-                abort(404)
-            return jsonify({
-                "service": Service.format(service),
-                "success": True
-            }),200
-        except:
-            print(sys.exc_info())
-            abort(422)
+        service = Service.query.get(service_id)
+        if service is None:
+            abort(404)
+        return jsonify({
+            "service": Service.format(service),
+            "success": True
+        }), 200
 
     # -----------------------------------------------------------------------------------------
     # ROUTE to update a service
@@ -384,7 +385,6 @@ def create_app(test_config=None):
     @requires_auth('patch:services')
     def update_service(jwt, service_id):
         body = request.get_json()
-        print(str(body))
         try:
             name = body.get('name', None)
             type = body.get('type', None)
@@ -396,7 +396,8 @@ def create_app(test_config=None):
             image = body.get('image', None)
 
             if (name is None) and (type is None) and (address is None) \
-                    and (region_id is None) and (email is None) and (phone is None)\
+                    and (region_id is None) and (email is None) \
+                    and (phone is None)\
                     and (website is None) and (image is None):
                 abort(422)
 
@@ -426,7 +427,7 @@ def create_app(test_config=None):
                 'success': True,
                 'updated': service.id
             }), 200
-        except:
+        except BaseException:
             print(sys.exc_info())
             abort(500)
 
@@ -456,7 +457,7 @@ def create_app(test_config=None):
                 'success': True,
                 'deleted': service.id
             }), 200
-        except:
+        except BaseException:
             print(sys.exc_info())
             abort(422)
 
@@ -511,6 +512,7 @@ def create_app(test_config=None):
         }), 401
 
     return app
+
 
 app = create_app()
 
