@@ -18,10 +18,11 @@ from auth import (
 )
 RESULTS_PER_PAGE = 5
 
+
 def paginate_results(request, results):
     page = request.args.get('page', 1, type=int)
     start = (page - 1) * RESULTS_PER_PAGE
-    if( len(results) < RESULTS_PER_PAGE ):
+    if(len(results) < RESULTS_PER_PAGE):
         end = len(results)-1
     else:
         end = start + RESULTS_PER_PAGE
