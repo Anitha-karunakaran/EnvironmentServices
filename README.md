@@ -105,8 +105,8 @@ The following are the different roles who can use the application
 
 Most of the API End Points Require JWT Authorization.  
 
-Sample JWT of Chief Officer and Services Manager are available in 'setup.sh'  
-You can use them by executing ```source setup.sh```   
+Sample JWT of Chief Officer and Services Manager are available in 'setup_jwt.sh'  
+You can use them by executing ```source setup_jwt.sh```   
 (or)  
 You can override them by setting the following 2 environment variables.  
 Your JWT can be obtained from the Browser's address bar(as access_token parameter) after logging in [this Auth0 redirect URL](https://fsndanikaruna.us.auth0.com/authorize?audience=envsrv&response_type=token&client_id=nGhgfyP2tBCsMHFGhqr3FvtsawagHfhu&redirect_uri=https://udacity-environment-services.herokuapp.com/regions)
@@ -337,8 +337,8 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
 The test database URL is present in .env file.  
    It can be overridden by changing the environment variable.  
 `TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_envsrvdb`
-3. Sample JWT of Chief Officer and Services Manager are available in setup.sh  
-   You can use them executing ```source setup.sh```   
+3. Sample JWT of Chief Officer and Services Manager are available in setup_jwt.sh  
+   You can use them executing ```source setup_jwt.sh```   
    You can override them by setting the following 2 environment variables.
    ```
    CHIEF_OFFICER_JWT=<INSERT_JWT>
