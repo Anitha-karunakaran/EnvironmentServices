@@ -67,9 +67,9 @@ flask run
 ```
 ### Database Models
 **REGION**
-- Id: Unique Id for a local region where the environment services are listed
-- Name: Name of the local region
-- City
+- Id: (Primary Key)
+- Name: (Unique)
+- City 
 - State
 - Country
 - RegionHead
@@ -85,6 +85,7 @@ flask run
 - phone
 - image
 - website
+
 
 ##Authentication and Authorization
 Application security is provided through RBAC configurations in Auth0.  
@@ -115,8 +116,9 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
    SERVICES_MANAGER_JWT=<INSERT_JWT>
    ```
 **Region**
-  * GET `/regions`  
+  * GET '/regions?page=< int: pagenum>'  
     * Lists all regions and its details
+    * Each Page lists 5 entries. Default lists the first page. Page Number(Optional) can be provided to move to the next page. 
     * Everyone has access 
     ```
     curl -X GET \
@@ -144,7 +146,7 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
         "success": true
     }
     ```
-  * GET `/regions/<region_id>`  
+  * GET '/regions/< int:region_id>'
     * List details of a region
     * Everyone has access 
     ```
@@ -165,7 +167,7 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
     "success": true
     } 
     ```
-  * POST `/regions` 
+  * POST '/regions'
     * Add a new region and its details
     * Only Chief Officer has access
     * The region name should be UNIQUE
@@ -190,7 +192,7 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
     ```
     {"created":8,"success":true}
     ```
-  * PATCH `/regions/<region_id>`
+  * PATCH '/regions/<region_id>'
     * Updates a region details
     * Only Chief Officer has access
     * Request Body contains at least one of Name, city, state, country or regionhead  
@@ -212,7 +214,7 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
     ```
     {"success":true,"updated":7}
     ```
-  * DELETE `/regions/<region_id>`
+  * DELETE '/regions/<region_id>'
     * Deletes a region
     * Only Chief Officer has access
     ```
@@ -227,8 +229,9 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
     ```
 
 **Services**
-  * GET `/services`
+  * GET '/services?page=< int: page_number>'
     * Lists all services and its details
+    * Each Page lists 5 entries. Default lists the first page. Page Number(Optional) can be provided to move to the next page.   
     * Everyone has access 
     ```
     curl -X GET \
@@ -265,14 +268,14 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
        "success": true
     }
     ```
-  * GET `/services/<service_id>`
+  * GET '/services/< int:service_id>'
     * Gets the details of the specific service.
     * Everyone has access 
     ```
         curl -X GET \
         https://udacity-environment-services.herokuapp.com/services/2
     ```  
-  * POST `/services`
+  * POST '/services'
     * Adds a new service and its details
     * Only Chief Officer and Service Manager has access
     ```
@@ -294,7 +297,7 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
     ``` 
         {"created":6,"success":true}
     ```
-  * PATCH `/services`
+  * PATCH '/services'
     * Updates an existing service details
     * Request body has at least one of name, type, address, region_id, email, phone, website or image  
     * Only Chief Officer and Service Manager has access
@@ -317,7 +320,7 @@ Your JWT can be obtained from the Browser's address bar(as access_token paramete
     ``` 
         {"success":true,"updated":6}
     ```
-  * DELETE `/services/<service_id>`
+  * DELETE '/services/<service_id>'
     * Deletes a service
     * Only Chief Officer and Service Manager has access
     ```
