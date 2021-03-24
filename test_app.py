@@ -1,6 +1,6 @@
 # STEPS TO EXECUTE THE TEST
 # 1. The test database should have been created - eg. test_envsrvdb
-# 2. The following environment variable should be set (setup_test_jwt.bat)
+# 2. The following environment variable should be set (setup.bat or setup.sh)
 # TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_envsrvdb
 # CHIEF_OFFICER_JWT should contain valid JWT of CHIEF_OFFICER
 # SERVICES_MANAGER_JWT should contain valid JWT of SERVICES_MANAGER_JWT

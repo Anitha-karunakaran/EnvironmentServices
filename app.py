@@ -1,9 +1,33 @@
 import os
-from flask import Flask, request, abort, jsonify
-from models import setup_db, Region, Service
+from flask import (
+    Flask,
+    request,
+    abort,
+    jsonify
+)
+from models import (
+    setup_db,
+    Region,
+    Service
+)
 from flask_cors import CORS
 import sys
-from auth import AuthError, requires_auth
+from auth import (
+    AuthError,
+    requires_auth
+)
+RESULTS_PER_PAGE = 5
+
+def paginate_results(request, results):
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * RESULTS_PER_PAGE
+    if( len(results) < RESULTS_PER_PAGE ):
+        end = len(results)-1
+    else:
+        end = start + RESULTS_PER_PAGE
+    formatted_results = [res.format() for res in results]
+    page_results = formatted_results[start:end]
+    return page_results
 
 
 def create_app(test_config=None):
@@ -59,8 +83,12 @@ def create_app(test_config=None):
         if (total_no_regions == 0):
             abort(404)
 
+        current_regions = paginate_results(request, all_regions)
+        if (len(current_regions) == 0):
+            abort(404)
+
         return jsonify({
-            'regions': [region.format() for region in all_regions],
+            'regions': current_regions,
             'success': True
         })
 
@@ -327,8 +355,12 @@ def create_app(test_config=None):
         if (total_no_services == 0):
             abort(404)
 
+        current_services = paginate_results(request, all_services)
+        if (len(current_services) == 0):
+            abort(404)
+
         return jsonify({
-            'services': [service.format() for service in all_services],
+            'services': current_services,
             'success': True
         })
 
@@ -465,7 +497,7 @@ def create_app(test_config=None):
     ROUTE FOR APPLICATION ROOT
     '''
     @app.route('/')
-    def welcome():
+    def index():
         return "Welcome to Environment Services Portal"
 
     # ----------------------------------------------------------------------------#
